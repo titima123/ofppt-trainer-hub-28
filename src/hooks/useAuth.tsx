@@ -1,0 +1,51 @@
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+
+interface AuthCtx {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  isManager: boolean;
+}
+
+const Ctx = createContext<AuthCtx>({ user: null, session: null, loading: true, isManager: false });
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isManager, setIsManager] = useState(false);
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+      if (s?.user) {
+        setTimeout(async () => {
+          const { data } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", s.user.id);
+          const roles = (data ?? []).map((r) => r.role);
+          setIsManager(
+            roles.some((r) => ["admin", "responsable_cdc", "responsable_formation"].includes(r))
+          );
+        }, 0);
+      } else {
+        setIsManager(false);
+      }
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setLoading(false);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  return (
+    <Ctx.Provider value={{ user: session?.user ?? null, session, loading, isManager }}>
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+export const useAuth = () => useContext(Ctx);
