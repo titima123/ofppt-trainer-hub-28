@@ -14,16 +14,240 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      inscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string
+          statut: Database["public"]["Enums"]["inscription_statut"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id: string
+          statut?: Database["public"]["Enums"]["inscription_statut"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string
+          statut?: Database["public"]["Enums"]["inscription_statut"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscriptions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions_formation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parcours: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duree_heures: number
+          id: string
+          thematique_id: string | null
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duree_heures?: number
+          id?: string
+          thematique_id?: string | null
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duree_heures?: number
+          id?: string
+          thematique_id?: string | null
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcours_thematique_id_fkey"
+            columns: ["thematique_id"]
+            isOneToOne: false
+            referencedRelation: "thematiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          centre: string | null
+          created_at: string
+          full_name: string
+          id: string
+          matricule: string | null
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          centre?: string | null
+          created_at?: string
+          full_name?: string
+          id: string
+          matricule?: string | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          centre?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          matricule?: string | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sessions_formation: {
+        Row: {
+          animateur_id: string | null
+          capacite: number
+          created_at: string
+          created_by: string | null
+          date_debut: string
+          date_fin: string
+          description: string | null
+          id: string
+          lieu: string | null
+          parcours_id: string | null
+          statut: Database["public"]["Enums"]["session_statut"]
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          animateur_id?: string | null
+          capacite?: number
+          created_at?: string
+          created_by?: string | null
+          date_debut: string
+          date_fin: string
+          description?: string | null
+          id?: string
+          lieu?: string | null
+          parcours_id?: string | null
+          statut?: Database["public"]["Enums"]["session_statut"]
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          animateur_id?: string | null
+          capacite?: number
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string
+          date_fin?: string
+          description?: string | null
+          id?: string
+          lieu?: string | null
+          parcours_id?: string | null
+          statut?: Database["public"]["Enums"]["session_statut"]
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_formation_parcours_id_fkey"
+            columns: ["parcours_id"]
+            isOneToOne: false
+            referencedRelation: "parcours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thematiques: {
+        Row: {
+          categorie: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          categorie?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          categorie?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_manager: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "admin"
+        | "responsable_cdc"
+        | "responsable_formation"
+        | "responsable_dr"
+        | "formateur_animateur"
+        | "formateur_participant"
+      inscription_statut: "en_attente" | "confirmee" | "refusee" | "annulee"
+      session_statut: "planifiee" | "en_cours" | "terminee" | "annulee"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +374,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "admin",
+        "responsable_cdc",
+        "responsable_formation",
+        "responsable_dr",
+        "formateur_animateur",
+        "formateur_participant",
+      ],
+      inscription_statut: ["en_attente", "confirmee", "refusee", "annulee"],
+      session_statut: ["planifiee", "en_cours", "terminee", "annulee"],
+    },
   },
 } as const
